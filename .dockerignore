@@ -1,0 +1,9 @@
+Dockerfile
+README.md
+main_test.go
+.DS_Store
+.dockerignore
+.envrc
+.gitignore
+go.sum
+.git/*
