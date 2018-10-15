@@ -107,3 +107,61 @@ Content-Type: application/json
 
 {"result":"success"}
 ```
+
+<br>
+
+
+#### DATABASE
+
+To connect to Postgres instance in the docker container:
+
+```psql -h localhost -U docker -d stockxcc_kp```
+
+Password is ```docker```
+
+<br>
+
+Table ```shoes``` schema:
+
+```
+CREATE TABLE shoes (
+    id                            SERIAL,
+    name                          TEXT NOT NULL,
+    "trueToSizeData"              int[] NOT NULL DEFAULT '{}',
+    "trueToSizeCalculation"       numeric(14,13) NOT NULL DEFAULT 0.00,
+    CONSTRAINT shoes_pkey PRIMARY KEY (id)
+);
+```
+
+Note: ```trueToSizeData``` field is an postgres Array data type. When updating this array postgres append_arr function is used. This is avoid having to rewriting the whole array updated with new data.
+
+
+Function ```CalculationTrueToSize``` and Trigger ```update_trueToSizeCalculation```:
+
+```
+CREATE OR REPLACE FUNCTION CalculationTrueToSize()
+RETURNS TRIGGER AS $$
+DECLARE
+    arrLen integer;
+    arrSum integer;
+BEGIN
+    SELECT cardinality("trueToSizeData") INTO arrLen
+    FROM shoes WHERE id=new.id;
+    
+    SELECT SUM(UNNEST(t)) INTO arrSum
+    FROM (SELECT UNNEST("trueToSizeData") FROM shoes WHERE id=new.id) t;
+    
+    UPDATE shoes SET "trueToSizeCalculation" = (arrSum::NUMERIC/arrLen::NUMERIC) WHERE id=new.id;
+    
+    RETURN new;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+```
+CREATE TRIGGER update_trueToSizeCalculation 
+AFTER UPDATE OF "trueToSizeData" ON shoes
+FOR EACH ROW EXECUTE PROCEDURE CalculationTrueToSize();
+```
+
+```CalculationTrueToSize()``` function is triggered when new data is added to the ```trueToSizeData``` column. This function calculates and updates the ```trueToSizeCalculation```.
