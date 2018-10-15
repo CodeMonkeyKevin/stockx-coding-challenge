@@ -12,6 +12,7 @@ type shoe struct {
 	TrueToSizeCalculation float64 `json:"trueToSizeCalculation"`
 }
 
+// Build Shoes array from DB
 func getShoes(db *sql.DB) ([]shoe, error) {
 	rows, err := db.Query(
 		"SELECT id, name, \"trueToSizeData\", \"trueToSizeCalculation\" FROM shoes")
@@ -35,6 +36,7 @@ func getShoes(db *sql.DB) ([]shoe, error) {
 	return shoes, nil
 }
 
+// Find our Create Shoe by name
 func getOrCreateShoeByName(db *sql.DB, name string) (shoe, error) {
 	var s shoe
 	err := db.QueryRow(
@@ -54,6 +56,7 @@ func getOrCreateShoeByName(db *sql.DB, name string) (shoe, error) {
 	return s, nil
 }
 
+// Find Shoe by ID
 func (s *shoe) findById(db *sql.DB) error {
 	return db.QueryRow(
 		"SELECT * FROM shoes WHERE id=$1",
@@ -61,6 +64,7 @@ func (s *shoe) findById(db *sql.DB) error {
 	).Scan(&s.ID, &s.Name, pq.Array(&s.TrueToSizeData), &s.TrueToSizeCalculation)
 }
 
+// Create new Shoe records
 func createShoe(db *sql.DB, name string) (shoe, error) {
 	var s shoe
 	err := db.QueryRow(
@@ -74,6 +78,8 @@ func createShoe(db *sql.DB, name string) (shoe, error) {
 	return s, nil
 }
 
+// Add new data to shoe array column, data is append to the array
+// to avoid rewriting the array and possible data being over written by another request
 func (s *shoe) updateShoe(db *sql.DB, newValue int) error {
 	_, err :=
 		db.Exec("UPDATE shoes SET \"trueToSizeData\" = array_append(\"trueToSizeData\", $1::int) WHERE id=$2",
@@ -85,6 +91,7 @@ func (s *shoe) updateShoe(db *sql.DB, newValue int) error {
 	return err
 }
 
+// Delete Shoe
 func (s *shoe) deleteShoe(db *sql.DB) error {
 	_, err := db.Exec("DELETE FROM shoes WHERE id=$1", s.ID)
 

@@ -12,5 +12,6 @@ func main() {
 		os.Getenv("APP_DB_NAME"),
 	)
 
+	// Not PROD friendly
 	a.Run(":3000")
 }

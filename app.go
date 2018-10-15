@@ -20,9 +20,16 @@ type App struct {
 }
 
 type shoeJsonPayload struct {
-	ID            int    `json:"id"`
 	Shoe          string `json:"shoe"`
 	TrueToSizeVal int    `json:"trueToSizeVal"`
+}
+
+// TODO: Standardize all JSON responses with status and
+// error fields, on success or failure
+type responseJson struct {
+	Status string  `json:"status"`
+	Error  string  `json:"error"`
+	Shoes  []*shoe `json:"shoes"`
 }
 
 func (a *App) Initialize(user, password, dbname string) {
@@ -39,6 +46,7 @@ func (a *App) Initialize(user, password, dbname string) {
 	a.initializeRoutes()
 }
 
+// App API startup function
 func (a *App) Run(addr string) {
 	log.Println("Starting Server...")
 	log.Fatal(http.ListenAndServe(addr, a.Router))
@@ -52,6 +60,7 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/shoes/{id:[0-9]+}", a.deleteShoe).Methods("DELETE")
 }
 
+// GET Request handles requesting of single shoe via shoe ID
 func (a *App) getShoe(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -75,6 +84,7 @@ func (a *App) getShoe(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, s)
 }
 
+// GET Request handles requesting of all shoes data
 func (a *App) getShoes(w http.ResponseWriter, r *http.Request) {
 	shoes, err := getShoes(a.DB)
 	if err != nil {
@@ -85,6 +95,8 @@ func (a *App) getShoes(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, shoes)
 }
 
+// POST Request, requires a JSON payload with shoe and trueToSizeVal as inputs
+// If no shoe is found by name function will date and add new trueToSizeVal
 func (a *App) addShoeData(w http.ResponseWriter, r *http.Request) {
 	var s shoeJsonPayload
 	decoder := json.NewDecoder(r.Body)
@@ -129,6 +141,7 @@ func (a *App) addShoeData(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, rShoe)
 }
 
+// DELETE Request by shoe ID
 func (a *App) deleteShoe(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
