@@ -12,9 +12,11 @@ COPY . /go/src/stockx
 USER postgres
 RUN /etc/init.d/postgresql start &&\
     psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
+    sleep 10 &&\
     createdb -O docker -E UTF8 stockxcc_kp
 
 RUN /etc/init.d/postgresql start &&\
+    sleep 10 &&\
     psql -d stockxcc_kp -f database/create.psql
 
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.6/main/pg_hba.conf
