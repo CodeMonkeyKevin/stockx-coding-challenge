@@ -145,7 +145,7 @@ func TestCreateShoe(t *testing.T) {
 
 func TestGetShoe(t *testing.T) {
 	clearTable()
-	addProducts(1)
+	addShoes(1)
 
 	req, _ := http.NewRequest("GET", "/shoes/1", nil)
 	response := executeRequest(req)
@@ -153,9 +153,28 @@ func TestGetShoe(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
-func TestDeleteProduct(t *testing.T) {}
+func TestDeleteShoe(t *testing.T) {
+	clearTable()
+	addShoes(5)
 
-func addProducts(count int) {
+	req, _ := http.NewRequest("DELETE", "/shoes/1", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var count int
+
+	err := a.DB.QueryRow("SELECT COUNT(*) FROM shoes").Scan(&count)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if count != 4 {
+		t.Errorf("Expected shoe record count to be '4'. Got '%v'", count)
+	}
+}
+
+func addShoes(count int) {
 	if count < 1 {
 		count = 1
 	}
