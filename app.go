@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"log"
@@ -92,6 +93,24 @@ func (a *App) addShoeData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+
+	// Validate shoe name
+	if err := validation.Validate(s.Shoe,
+		validation.Required,
+		validation.Length(3, 100),
+	); err != nil {
+		respondWithError(w, http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
+	// Validate input value
+	if err := validation.Validate(s.TrueToSizeVal,
+		validation.Required,
+		validation.In(1, 2, 3, 4, 5).Error("trueToSizeVal must be between 1 and 5"),
+	); err != nil {
+		respondWithError(w, http.StatusUnprocessableEntity, err.Error())
+		return
+	}
 
 	var rShoe shoe
 	rShoe, err := getOrCreateShoeByName(a.DB, s.Shoe)
