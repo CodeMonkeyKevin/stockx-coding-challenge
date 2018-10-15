@@ -38,7 +38,8 @@ Content-Type: application/json
 
 {
     "id":34,
-    "shoe":"AJ 1 Mid Cool Blue","trueToSizeData":[4],
+    "shoe":"AJ 1 Mid Cool Blue",
+    "trueToSizeData":[4],
     "trueToSizeCalculation":4
 }
 ```
