@@ -3,6 +3,11 @@
 ### Setup and Starting the API
 The project contains Dockerfile will install Postgresql, create the necessary database, table, function, trigger, build and exec the API. Git clone or download this repo and cd into root dir of this repo.
 
+```
+git clone https://github.com/CodeMonkeyKevin/stockx-coding-challenge.git
+cd stockx-coding-challenge/
+```
+
 ###### Build Image:
 ```sh
 $ docker build -t stockx .
